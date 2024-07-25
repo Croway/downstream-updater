@@ -274,6 +274,7 @@ public class App {
       gitRepository.getRemoteAuthStrings().put("upstream", upstreamRepositoryAuthString);
       String downstreamRepositoryBaseName = FilenameUtils.getBaseName(downstreamRepository);
       File repoDir = new File(targetDir, downstreamRepositoryBaseName + "-repo");
+      gitRepository.setDefaultCredentialProvider();
 
       if (repoDir.exists()) {
          gitRepository.open(repoDir);
