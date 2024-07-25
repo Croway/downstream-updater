@@ -67,6 +67,7 @@ public class JGitRepository implements GitRepository {
    public JGitRepository() {
       this.remoteAuthStrings = new HashMap<>();
       this.credentialsProvider = new UsernamePasswordCredentialsProvider(remoteAuthStrings.get("origin"), "");
+       logger.info("GITHUB TOKEN {}", remoteAuthStrings.get("origin"));
    }
 
    public File getDirectory() {
