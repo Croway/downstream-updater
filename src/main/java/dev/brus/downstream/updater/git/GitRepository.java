@@ -62,4 +62,5 @@ public interface GitRepository {
 
    Iterable<GitCommit> log(String addStart, String notStart) throws Exception;
 
+   void setDefaultCredentialProvider();
 }

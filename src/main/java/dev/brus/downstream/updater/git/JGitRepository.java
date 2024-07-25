@@ -38,7 +38,7 @@ public class JGitRepository implements GitRepository {
 
    private String userName;
    private String userEmail;
-   private final CredentialsProvider credentialsProvider;
+   private CredentialsProvider credentialsProvider;
 
    private Map<String, String> remoteAuthStrings;
 
@@ -66,8 +66,6 @@ public class JGitRepository implements GitRepository {
 
    public JGitRepository() {
       this.remoteAuthStrings = new HashMap<>();
-      this.credentialsProvider = new UsernamePasswordCredentialsProvider(remoteAuthStrings.get("origin"), "");
-       logger.info("GITHUB TOKEN {}", remoteAuthStrings.get("origin"));
    }
 
    public File getDirectory() {
@@ -283,5 +281,10 @@ public class JGitRepository implements GitRepository {
             }
          };
       };
+   }
+
+   @Override
+   public void setDefaultCredentialProvider() {
+      this.credentialsProvider = new UsernamePasswordCredentialsProvider(remoteAuthStrings.get("origin"), "");
    }
 }
