@@ -482,6 +482,9 @@ public class RedHatJiraIssueManager extends JiraIssueManager implements Downstre
    @Override
    protected Issue parseIssue(JsonObject issueObject, DateFormat dateFormat) throws Exception {
       Issue issue = super.parseIssue(issueObject, dateFormat);
+      if (issue == null) {
+         return null;
+      }
 
       JsonObject issueFields = issueObject.getAsJsonObject("fields");
 

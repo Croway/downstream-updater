@@ -40,12 +40,7 @@ import java.util.concurrent.Future;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -216,7 +211,9 @@ public class JiraIssueManager implements IssueManager {
 
                Issue issue = parseIssue(issueObject, dateFormat);
 
-               issues.put(issue.getKey(), issue);
+               if (issue != null) {
+                  issues.put(issue.getKey(), issue);
+               }
 
                result++;
             }
@@ -276,46 +273,52 @@ public class JiraIssueManager implements IssueManager {
 
       JsonObject issueFields = issueObject.getAsJsonObject("fields");
 
-      JsonElement issueAssigneeElement = issueFields.get("assignee");
-      String issueAssignee = issueAssigneeElement != null && !issueAssigneeElement.isJsonNull() ?
-         issueFields.getAsJsonObject("assignee").getAsJsonPrimitive("name").getAsString() : null;
-      String issueCreator = issueFields.getAsJsonObject("creator").getAsJsonPrimitive("name").getAsString();
-      String issueReporter = issueFields.getAsJsonObject("reporter").getAsJsonPrimitive("name").getAsString();
-      String issueStatus = issueFields.getAsJsonObject("status").getAsJsonPrimitive("name").getAsString();
-      JsonElement issueResolutionElement = issueFields.get("resolution");
-      String issueResolution = issueResolutionElement != null && !issueResolutionElement.isJsonNull() ?
-         issueResolutionElement.getAsJsonObject().getAsJsonPrimitive("name").getAsString() : null;
-      JsonElement issueDescriptionElement = issueFields.get("description");
-      String issueDescription = issueDescriptionElement == null || issueDescriptionElement.isJsonNull() ?
-         null : issueDescriptionElement.getAsString();
-      String issueType = issueFields.getAsJsonObject("issuetype").getAsJsonPrimitive("name").getAsString();
-      String issueSummary = issueFields.getAsJsonPrimitive("summary").getAsString();
-      Date issueCreated = dateFormat.parse(issueFields.getAsJsonPrimitive("created").getAsString());
-      Date issueUpdated = dateFormat.parse(issueFields.getAsJsonPrimitive("updated").getAsString());
+      try {
+         JsonElement issueAssigneeElement = issueFields.get("assignee");
+         String issueAssignee = issueAssigneeElement != null && !issueAssigneeElement.isJsonNull() ?
+                 issueFields.getAsJsonObject("assignee").getAsJsonPrimitive("name").getAsString() : null;
+         String issueCreator = issueFields.getAsJsonObject("creator").getAsJsonPrimitive("name").getAsString();
+         String issueReporter = issueFields.getAsJsonObject("reporter").getAsJsonPrimitive("name").getAsString();
+         String issueStatus = issueFields.getAsJsonObject("status").getAsJsonPrimitive("name").getAsString();
+         JsonElement issueResolutionElement = issueFields.get("resolution");
+         String issueResolution = issueResolutionElement != null && !issueResolutionElement.isJsonNull() ?
+                 issueResolutionElement.getAsJsonObject().getAsJsonPrimitive("name").getAsString() : null;
+         JsonElement issueDescriptionElement = issueFields.get("description");
+         String issueDescription = issueDescriptionElement == null || issueDescriptionElement.isJsonNull() ?
+                 null : issueDescriptionElement.getAsString();
+         String issueType = issueFields.getAsJsonObject("issuetype").getAsJsonPrimitive("name").getAsString();
+         String issueSummary = issueFields.getAsJsonPrimitive("summary").getAsString();
+         Date issueCreated = dateFormat.parse(issueFields.getAsJsonPrimitive("created").getAsString());
+         Date issueUpdated = dateFormat.parse(issueFields.getAsJsonPrimitive("updated").getAsString());
 
-      Issue issue = new Issue()
-         .setKey(issueKey)
-         .setAssignee(issueAssignee)
-         .setCreator(issueCreator)
-         .setReporter(issueReporter)
-         .setState(issueStatus)
-         .setResolution(issueResolution)
-         .setSummary(issueSummary)
-         .setDescription(issueDescription)
-         .setCreated(issueCreated)
-         .setUpdated(issueUpdated)
-         .setUrl(issueBaseUrl + "/" + issueKey)
-         .setType(issueType);
+         Issue issue = new Issue()
+                 .setKey(issueKey)
+                 .setAssignee(issueAssignee)
+                 .setCreator(issueCreator)
+                 .setReporter(issueReporter)
+                 .setState(issueStatus)
+                 .setResolution(issueResolution)
+                 .setSummary(issueSummary)
+                 .setDescription(issueDescription)
+                 .setCreated(issueCreated)
+                 .setUpdated(issueUpdated)
+                 .setUrl(issueBaseUrl + "/" + issueKey)
+                 .setType(issueType);
 
-      for (String component : parseComponents(issueFields.get("components"))) {
-         issue.getComponents().add(component);
+         for (String component : parseComponents(issueFields.get("components"))) {
+            issue.getComponents().add(component);
+         }
+
+         for (String label : parseLabels(issueFields.get("labels"))) {
+            issue.getLabels().add(label);
+         }
+
+         System.out.println("parsed issue " + issueKey);
+         return issue;
+      } catch (ClassCastException ex) {
+         System.out.println("impossible to parse issue " + issueKey);
+         return null;
       }
-
-      for (String label : parseLabels(issueFields.get("labels"))) {
-         issue.getLabels().add(label);
-      }
-
-      return issue;
    }
 
    protected List<String> parseComponents(JsonElement componentsElement) {

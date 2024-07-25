@@ -38,6 +38,7 @@ public class JGitRepository implements GitRepository {
 
    private String userName;
    private String userEmail;
+   private final CredentialsProvider credentialsProvider;
 
    private Map<String, String> remoteAuthStrings;
 
@@ -65,6 +66,7 @@ public class JGitRepository implements GitRepository {
 
    public JGitRepository() {
       this.remoteAuthStrings = new HashMap<>();
+      this.credentialsProvider = new UsernamePasswordCredentialsProvider(remoteAuthStrings.get("origin"), "");
    }
 
    public File getDirectory() {
@@ -83,6 +85,7 @@ public class JGitRepository implements GitRepository {
          .setProgressMonitor(new TextProgressMonitor(new PrintWriter(System.out)))
          .setURI(uri)
          .setDirectory(dir)
+         .setCredentialsProvider(credentialsProvider)
          .call();
       return this;
    }
@@ -182,6 +185,7 @@ public class JGitRepository implements GitRepository {
       RevCommit revCommit = git.commit().setMessage(message)
          .setAuthor(new PersonIdent(authorName, authorEmail, authorWhen, authorTimezone))
          .setCommitter(committerName, committerEmail)
+              .setCredentialsProvider(credentialsProvider)
          .call();
 
       return new JGitCommit(revCommit);
@@ -223,7 +227,7 @@ public class JGitRepository implements GitRepository {
 
    @Override
    public void fetch(String remote) throws Exception {
-      git.fetch().setRemote(remote).call();
+      git.fetch().setCredentialsProvider(credentialsProvider).setRemote(remote).call();
    }
 
    @Override
