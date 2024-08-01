@@ -63,8 +63,8 @@ public class ReleaseVersion implements Comparable<ReleaseVersion> {
          Integer.parseInt(releaseVersionMatcher.group(1)),
          Integer.parseInt(releaseVersionMatcher.group(2)),
          Integer.parseInt(releaseVersionMatcher.group(3)),
-         "",
-         "");
+         null,
+         null);
    }
 
    public ReleaseVersion(int major, int minor, int patch, String qualifier, String candidate) {
@@ -106,6 +106,9 @@ public class ReleaseVersion implements Comparable<ReleaseVersion> {
 
    @Override
    public String toString() {
+      if (qualifier == null && candidate == null) {
+         return major + "." + minor + "." + patch;
+      }
       if (qualifier == null) {
          return major + "." + minor + "." + patch + "." + candidate;
       }
