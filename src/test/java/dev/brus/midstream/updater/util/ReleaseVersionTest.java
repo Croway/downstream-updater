@@ -8,6 +8,9 @@ public class ReleaseVersionTest {
 
    @Test
    public void testReleaseVersionToString() {
+      testReleaseVersionToString("4.4.0.ER2");
+      testReleaseVersionToString("4.4.0.CS15");
+      testReleaseVersionToString("4.4.0.CQ20");
       testReleaseVersionToString("7.10.0.CR1");
       testReleaseVersionToString("7.10.0.OPR.1.CR1");
       testReleaseVersionToString("7.10.0.OPR.1.ER1");

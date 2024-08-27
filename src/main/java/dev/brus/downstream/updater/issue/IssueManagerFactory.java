@@ -13,7 +13,15 @@ public class IssueManagerFactory {
 
    public DownstreamIssueManager getDownstreamIssueManager(String serverURL, String authString, String projectKey, IssueManager upstreamIssueManager) {
       if (serverURL.contains("issues.redhat.com")) {
-         return new RedHatJiraIssueManager(serverURL, authString, projectKey, new RedHatIssueStateMachine(), upstreamIssueManager);
+         DownstreamIssueStateMachine issueStateMachine;
+
+         if ("RHBAC".equals(projectKey)) {
+            issueStateMachine = new RHBACStateMachine();
+         } else {
+            issueStateMachine = new RedHatIssueStateMachine();
+         }
+
+         return new RedHatJiraIssueManager(serverURL, authString, projectKey, issueStateMachine, upstreamIssueManager);
       } else {
          throw new IllegalArgumentException("Issue server URL not supported: " + serverURL);
       }
