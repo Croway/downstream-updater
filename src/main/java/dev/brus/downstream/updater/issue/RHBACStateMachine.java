@@ -2,20 +2,24 @@ package dev.brus.downstream.updater.issue;
 
 public class RHBACStateMachine implements DownstreamIssueStateMachine {
 
-    private static final String ISSUE_STATE_TODO = "Refinement";
-    private static final String ISSUE_STATE_DEV_COMPLETE = "In Progress";
+    private static final String ISSUE_STATE_TODO = "To Do";
+    private static final String ISSUE_STATE_DEV_COMPLETE = "Review";
 
     @Override
     public int getStateIndex(String state) {
         switch (state) {
             case "New":
                 return 0;
-            case "Refinement":
+            case "Backlog":
                 return 1;
-            case "In Progress":
+            case "To Do":
                 return 2;
-            case "Closed":
+            case "In Progress":
                 return 3;
+            case "Review":
+                return 4;
+            case "Closed":
+                return 5;
             default:
                 throw new IllegalStateException("Invalid state: " + state);
         }
