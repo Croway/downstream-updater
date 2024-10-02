@@ -297,10 +297,11 @@ public class App {
       gitRepository.branchCreate(downstreamBranch, "origin/" + downstreamBranch);
       gitRepository.checkout(downstreamBranch);
 
+      gitRepository.remoteAdd("midstream", "https://github.com/jboss-fuse/camel.git");
+      gitRepository.fetch("midstream");
 
       // Initialize IssueManagerFactory
       IssueManagerFactory issueManagerFactory = new IssueManagerFactory();
-
 
       // Load upstream issues
       File upstreamIssuesFile = new File(targetDir, downstreamRepositoryBaseName + "-upstream-issues.json");
