@@ -1020,11 +1020,7 @@ public class CommitProcessor {
          commitTask.setResult(cherryPickedCommit.getName());
 
          // Invoke github API
-         logger.info("Creating PR");
-
-         HttpRequest request = HttpRequest.newBuilder()
-                 .uri(URI.create("https://api.github.com/repos/jboss-fuse/camel/pulls"))
-                 .POST(HttpRequest.BodyPublishers.ofString("""
+         String body = ("""
                 {
                     "title":"$title",
                     "body":"$body",
@@ -1032,10 +1028,15 @@ public class CommitProcessor {
                     "base":"$base"
                 }
                 """
-                         .replace("$title", cherryPickedCommit.getShortMessage())
-                         .replace("$body", cherryPickedCommit.getFullMessage())
-                         .replace("$head", "camel-downstream-updater:" + cherryPickedCommit.getBranch())
-                         .replace("$base", downstreamBranch)))
+                 .replace("$title", cherryPickedCommit.getShortMessage())
+                 .replace("$body", cherryPickedCommit.getFullMessage())
+                 .replace("$head", "camel-downstream-updater:" + cherryPickedCommit.getBranch())
+                 .replace("$base", downstreamBranch));
+         logger.info("Creating PR with body {}", body);
+
+         HttpRequest request = HttpRequest.newBuilder()
+                 .uri(URI.create("https://api.github.com/repos/jboss-fuse/camel/pulls"))
+                 .POST(HttpRequest.BodyPublishers.ofString(body))
                  .header("Accept", "application/vnd.github+json")
                  .header("Authorization", "Bearer " + downstreamRepositoryAuthString)
                  .header("X-GitHub-Api-Version", "2022-11-28")
@@ -1044,7 +1045,7 @@ public class CommitProcessor {
          HttpResponse<String> response =
                  HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
 
-         logger.info("PR creation response with code %s and message %s", response.statusCode(), response.body());
+         logger.info("PR creation response with code {} and message {}", response.statusCode(), response.body());
       } else if (commitTask.getType() == CommitTask.Type.ADD_LABEL_TO_DOWNSTREAM_ISSUE) {
          downstreamIssueManager.addIssueLabels(commitTask.getArgs().get("issueKey"), commitTask.getArgs().get("label"));
       } else if (commitTask.getType() == CommitTask.Type.ADD_UPSTREAM_ISSUE_TO_DOWNSTREAM_ISSUE) {
