@@ -941,40 +941,39 @@ public class CommitProcessor {
       GitCommit upstreamCommit = gitRepository.resolveCommit(commit.getUpstreamCommit());
 
       currentBranch = downstreamBranch + "-" + UUID.randomUUID().toString().split("-")[0];
-      ((JGitCommit) upstreamCommit).setBranch(currentBranch);
       gitRepository.branchCreate(currentBranch,
               "midstream/" + downstreamBranch);
 
-      try {
-         logger.info("Cherry-picking " + commit.getUpstreamCommit() + " for downstream: " + downstreamIssues);
-         gitRepository.cherryPick(upstreamCommit);
+      logger.info("Cherry-picking " + commit.getUpstreamCommit() + " for downstream: " + downstreamIssues);
+      gitRepository.cherryPick(upstreamCommit);
 
-         if (!checkCommit(commit, skipTests)) {
-            throw new IllegalStateException("Error checking commit: " + commit.getUpstreamCommit());
-         }
-
-         String commitMessage = upstreamCommit.getFullMessage() + "\n" +
-            "(cherry picked from commit " + upstreamCommit.getName() + ")";
-
-         if (downstreamIssues != null) {
-            commitMessage += "\n\n" + "downstream: " + downstreamIssues;
-         }
-
-         GitCommit cherryPickedCommit = gitRepository
-            .commit(commitMessage,
-               upstreamCommit.getAuthorName(),
-               upstreamCommit.getAuthorEmail(),
-               upstreamCommit.getAuthorWhen(),
-               upstreamCommit.getAuthorTimeZone());
-
-         gitRepository.push("origin", currentBranch);
-
-         cherryPickedCommits.put(upstreamCommit.getName(), new AbstractMap.SimpleEntry(candidateReleaseVersion, cherryPickedCommit));
-
-         return cherryPickedCommit;
-      } finally {
-         gitRepository.resetHard();
+      if (!checkCommit(commit, skipTests)) {
+         throw new IllegalStateException("Error checking commit: " + commit.getUpstreamCommit());
       }
+
+      String commitMessage = upstreamCommit.getFullMessage() + "\n" +
+         "(cherry picked from commit " + upstreamCommit.getName() + ")";
+
+      if (downstreamIssues != null) {
+         commitMessage += "\n\n" + "downstream: " + downstreamIssues;
+      }
+
+      GitCommit cherryPickedCommit = gitRepository
+         .commit(commitMessage,
+            upstreamCommit.getAuthorName(),
+            upstreamCommit.getAuthorEmail(),
+            upstreamCommit.getAuthorWhen(),
+            upstreamCommit.getAuthorTimeZone());
+
+      logger.info("cherry picker {}", commitMessage);
+
+      gitRepository.push("origin", currentBranch);
+
+      logger.info("created branch {}", currentBranch);
+
+      cherryPickedCommits.put(upstreamCommit.getName(), new AbstractMap.SimpleEntry(candidateReleaseVersion, cherryPickedCommit));
+
+      return cherryPickedCommit;
    }
 
    private boolean processCommitTask(Commit commit, String release, CommitTask.Type type, Commit.Action action, Map<String, String> args, Map<String, String> userArgs, List<CommitTask> confirmedTasks) throws Exception {
@@ -1026,12 +1025,13 @@ public class CommitProcessor {
                     "title":"$title",
                     "body":"$body",
                     "head":"$head",
-                    "base":"$base"
+                    "base":"$base",
+                    "head-repo":"jboss-fuse/camel-downstream-updater"
                 }
                 """
                  .replace("$title", cherryPickedCommit.getShortMessage())
                  .replace("$body", cherryPickedCommit.getFullMessage().replace("\n", " "))
-                 .replace("$head", "camel-downstream-updater:" + currentBranch)
+                 .replace("$head", currentBranch)
                  .replace("$base", downstreamBranch));
          logger.info("Creating PR with body {}", body);
 

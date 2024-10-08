@@ -7,7 +7,6 @@ import org.eclipse.jgit.revwalk.RevCommit;
 
 public class JGitCommit implements GitCommit {
    private RevCommit revCommit;
-   private String branchName;
 
    public JGitCommit(RevCommit revCommit) {
       this.revCommit = revCommit;
@@ -70,14 +69,5 @@ public class JGitCommit implements GitCommit {
    @Override
    public String getShortMessage() {
       return revCommit.getShortMessage();
-   }
-
-   @Override
-   public String getBranch() {
-      return branchName;
-   }
-
-   public void setBranch(String branch) {
-      this.branchName = branch;
    }
 }

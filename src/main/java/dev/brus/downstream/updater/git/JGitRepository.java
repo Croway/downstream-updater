@@ -185,7 +185,7 @@ public class JGitRepository implements GitRepository {
       RevCommit revCommit = git.commit().setMessage(message)
          .setAuthor(new PersonIdent(authorName, authorEmail, authorWhen, authorTimezone))
          .setCommitter(committerName, committerEmail)
-              .setCredentialsProvider(credentialsProvider)
+         .setCredentialsProvider(credentialsProvider)
          .call();
 
       return new JGitCommit(revCommit);

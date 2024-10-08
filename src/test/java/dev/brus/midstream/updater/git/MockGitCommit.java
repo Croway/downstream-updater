@@ -123,11 +123,6 @@ public class MockGitCommit implements GitCommit {
       return shortMessage;
    }
 
-   @Override
-   public String getBranch() {
-      return null;
-   }
-
    public MockGitCommit setShortMessage(String shortMessage) {
       this.shortMessage = shortMessage;
       return this;
