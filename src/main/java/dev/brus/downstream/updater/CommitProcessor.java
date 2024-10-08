@@ -95,6 +95,7 @@ public class CommitProcessor {
    private File commitsDir;
    private String downstreamBranch;
    private String downstreamRepositoryAuthString;
+   private String currentBranch;
 
    public GitRepository getGitRepository() {
       return gitRepository;
@@ -939,9 +940,9 @@ public class CommitProcessor {
    private GitCommit cherryPickUpstreamCommit(Commit commit, String downstreamIssues, boolean skipTests) throws Exception {
       GitCommit upstreamCommit = gitRepository.resolveCommit(commit.getUpstreamCommit());
 
-      String branch = downstreamBranch + "-" + UUID.randomUUID().toString().split("-")[0];
-      ((JGitCommit) upstreamCommit).setBranch(branch);
-      gitRepository.branchCreate(branch,
+      currentBranch = downstreamBranch + "-" + UUID.randomUUID().toString().split("-")[0];
+      ((JGitCommit) upstreamCommit).setBranch(currentBranch);
+      gitRepository.branchCreate(currentBranch,
               "midstream/" + downstreamBranch);
 
       try {
@@ -966,7 +967,7 @@ public class CommitProcessor {
                upstreamCommit.getAuthorWhen(),
                upstreamCommit.getAuthorTimeZone());
 
-         gitRepository.push("origin", null);
+         gitRepository.push("origin", currentBranch);
 
          cherryPickedCommits.put(upstreamCommit.getName(), new AbstractMap.SimpleEntry(candidateReleaseVersion, cherryPickedCommit));
 
@@ -1029,8 +1030,8 @@ public class CommitProcessor {
                 }
                 """
                  .replace("$title", cherryPickedCommit.getShortMessage())
-                 .replace("$body", cherryPickedCommit.getFullMessage())
-                 .replace("$head", "camel-downstream-updater:" + cherryPickedCommit.getBranch())
+                 .replace("$body", cherryPickedCommit.getFullMessage().replace("\n", " "))
+                 .replace("$head", "camel-downstream-updater:" + currentBranch)
                  .replace("$base", downstreamBranch));
          logger.info("Creating PR with body {}", body);
 
