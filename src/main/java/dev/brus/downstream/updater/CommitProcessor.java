@@ -19,6 +19,7 @@ package dev.brus.downstream.updater;
 
 import dev.brus.downstream.updater.git.GitCommit;
 import dev.brus.downstream.updater.git.GitRepository;
+import dev.brus.downstream.updater.git.JGitCommit;
 import dev.brus.downstream.updater.issue.DownstreamIssueManager;
 import dev.brus.downstream.updater.issue.Issue;
 import dev.brus.downstream.updater.issue.IssueCustomerPriority;
@@ -41,6 +42,10 @@ import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.InetAddress;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -89,6 +94,7 @@ public class CommitProcessor {
    private String checkTestsCommand;
    private File commitsDir;
    private String downstreamBranch;
+   private String downstreamRepositoryAuthString;
 
    public GitRepository getGitRepository() {
       return gitRepository;
@@ -933,7 +939,9 @@ public class CommitProcessor {
    private GitCommit cherryPickUpstreamCommit(Commit commit, String downstreamIssues, boolean skipTests) throws Exception {
       GitCommit upstreamCommit = gitRepository.resolveCommit(commit.getUpstreamCommit());
 
-      gitRepository.branchCreate(downstreamBranch + "-" + UUID.randomUUID().toString().split("-")[0],
+      String branch = downstreamBranch + "-" + UUID.randomUUID().toString().split("-")[0];
+      ((JGitCommit) upstreamCommit).setBranch(branch);
+      gitRepository.branchCreate(branch,
               "midstream/" + downstreamBranch);
 
       try {
@@ -1010,6 +1018,33 @@ public class CommitProcessor {
             commitTask.getArgs().get("downstreamIssues"),
             Boolean.parseBoolean(commitTask.getUserArgs().get(USER_ARG_SKIP_TESTS)));
          commitTask.setResult(cherryPickedCommit.getName());
+
+         // Invoke github API
+         logger.info("Creating PR");
+
+         HttpRequest request = HttpRequest.newBuilder()
+                 .uri(URI.create("https://api.github.com/repos/jboss-fuse/camel/pulls"))
+                 .POST(HttpRequest.BodyPublishers.ofString("""
+                {
+                    "title":"$title",
+                    "body":"$body",
+                    "head":"$head",
+                    "base":"$base"
+                }
+                """
+                         .replace("$title", cherryPickedCommit.getShortMessage())
+                         .replace("$body", cherryPickedCommit.getFullMessage())
+                         .replace("$head", "camel-downstream-updater:" + cherryPickedCommit.getBranch())
+                         .replace("$base", downstreamBranch)))
+                 .header("Accept", "application/vnd.github+json")
+                 .header("Authorization", "Bearer " + downstreamRepositoryAuthString)
+                 .header("X-GitHub-Api-Version", "2022-11-28")
+                 .build();
+
+         HttpResponse<String> response =
+                 HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
+
+         logger.info("PR creation response with code %s and message %s", response.statusCode(), response.body());
       } else if (commitTask.getType() == CommitTask.Type.ADD_LABEL_TO_DOWNSTREAM_ISSUE) {
          downstreamIssueManager.addIssueLabels(commitTask.getArgs().get("issueKey"), commitTask.getArgs().get("label"));
       } else if (commitTask.getType() == CommitTask.Type.ADD_UPSTREAM_ISSUE_TO_DOWNSTREAM_ISSUE) {
@@ -1232,5 +1267,9 @@ public class CommitProcessor {
 
    public void setDownstreamBranch(String downstreamBranch) {
       this.downstreamBranch = downstreamBranch;
+   }
+
+   public void setRepositoryAuth(String downstreamRepositoryAuthString) {
+      this.downstreamRepositoryAuthString = downstreamRepositoryAuthString;
    }
 }

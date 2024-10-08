@@ -22,4 +22,6 @@ public interface GitCommit {
    TimeZone getCommitterTimeZone();
 
    String getShortMessage();
+
+   String getBranch();
 }

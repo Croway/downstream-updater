@@ -520,6 +520,7 @@ public class App {
       commitProcessor.setCheckTestsCommand(checkTestsCommand);
       commitProcessor.setCommitsDir(commitsDir);
       commitProcessor.setDownstreamBranch(downstreamBranch);
+      commitProcessor.setRepositoryAuth(downstreamRepositoryAuthString);
 
       //Delete current commits file
       File commitsFile;
