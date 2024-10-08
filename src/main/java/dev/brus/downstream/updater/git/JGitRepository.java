@@ -196,6 +196,7 @@ public class JGitRepository implements GitRepository {
       git.pull()
         .setRemote(remote)
         .setRemoteBranchName(branch)
+        .setCredentialsProvider(credentialsProvider)
         .call();
    }
 
