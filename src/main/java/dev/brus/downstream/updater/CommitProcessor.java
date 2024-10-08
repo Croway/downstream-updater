@@ -943,6 +943,7 @@ public class CommitProcessor {
       currentBranch = downstreamBranch + "-" + UUID.randomUUID().toString().split("-")[0];
       gitRepository.branchCreate(currentBranch,
               "midstream/" + downstreamBranch);
+      gitRepository.checkout(currentBranch);
 
       logger.info("Cherry-picking " + commit.getUpstreamCommit() + " for downstream: " + downstreamIssues);
       gitRepository.cherryPick(upstreamCommit);
@@ -1026,7 +1027,7 @@ public class CommitProcessor {
                     "body":"$body",
                     "head":"$head",
                     "base":"$base",
-                    "head-repo":"jboss-fuse/camel-downstream-updater"
+                    "head_repo":"jboss-fuse/camel-downstream-updater"
                 }
                 """
                  .replace("$title", cherryPickedCommit.getShortMessage())
