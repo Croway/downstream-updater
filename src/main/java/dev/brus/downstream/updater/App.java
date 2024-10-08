@@ -297,8 +297,10 @@ public class App {
       gitRepository.branchCreate(downstreamBranch, "origin/" + downstreamBranch);
       gitRepository.checkout(downstreamBranch);
 
+      // Align downstream to midstream
       gitRepository.remoteAdd("midstream", "https://github.com/jboss-fuse/camel.git");
       gitRepository.fetch("midstream");
+      gitRepository.pull(downstreamBranch, "midstream");
 
       // Initialize IssueManagerFactory
       IssueManagerFactory issueManagerFactory = new IssueManagerFactory();
@@ -517,6 +519,7 @@ public class App {
       commitProcessor.setCheckCommand(checkCommand);
       commitProcessor.setCheckTestsCommand(checkTestsCommand);
       commitProcessor.setCommitsDir(commitsDir);
+      commitProcessor.setDownstreamBranch(downstreamBranch);
 
       //Delete current commits file
       File commitsFile;

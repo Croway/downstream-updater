@@ -44,14 +44,7 @@ import java.net.InetAddress;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -95,6 +88,7 @@ public class CommitProcessor {
    private String checkCommand;
    private String checkTestsCommand;
    private File commitsDir;
+   private String downstreamBranch;
 
    public GitRepository getGitRepository() {
       return gitRepository;
@@ -939,6 +933,9 @@ public class CommitProcessor {
    private GitCommit cherryPickUpstreamCommit(Commit commit, String downstreamIssues, boolean skipTests) throws Exception {
       GitCommit upstreamCommit = gitRepository.resolveCommit(commit.getUpstreamCommit());
 
+      gitRepository.branchCreate(downstreamBranch + "-" + UUID.randomUUID().toString().split("-")[0],
+              "midstream/" + downstreamBranch);
+
       try {
          logger.info("Cherry-picking " + commit.getUpstreamCommit() + " for downstream: " + downstreamIssues);
          gitRepository.cherryPick(upstreamCommit);
@@ -1233,4 +1230,7 @@ public class CommitProcessor {
       return userResolver.getDefaultUser();
    }
 
+   public void setDownstreamBranch(String downstreamBranch) {
+      this.downstreamBranch = downstreamBranch;
+   }
 }

@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
+import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.revwalk.RevCommit;
 
 public interface GitRepository {
@@ -43,6 +44,8 @@ public interface GitRepository {
    GitCommit commit(String message, String authorName, String authorEmail, Date authorWhen, TimeZone authorTimezone) throws Exception;
 
    GitCommit commit(String message, String authorName, String authorEmail, Date authorWhen, TimeZone authorTimezone, String committerName, String committerEmail) throws Exception;
+
+   void pull(String branch, String remote) throws GitAPIException;
 
    void push(String remote, String name) throws Exception;
 

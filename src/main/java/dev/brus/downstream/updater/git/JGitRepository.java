@@ -15,6 +15,7 @@ import dev.brus.downstream.updater.util.CommandExecutor;
 import org.eclipse.jgit.api.CherryPickResult;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ResetCommand;
+import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.lib.ObjectReader;
 import org.eclipse.jgit.lib.PersonIdent;
@@ -188,6 +189,14 @@ public class JGitRepository implements GitRepository {
          .call();
 
       return new JGitCommit(revCommit);
+   }
+
+   @Override
+   public void pull(String branch, String remote) throws GitAPIException {
+      git.pull()
+        .setRemote(remote)
+        .setRemoteBranchName(branch)
+        .call();
    }
 
    @Override
