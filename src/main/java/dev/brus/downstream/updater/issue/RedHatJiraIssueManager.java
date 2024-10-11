@@ -122,6 +122,12 @@ public class RedHatJiraIssueManager extends JiraIssueManager implements Downstre
          JsonObject targetReleaseObject = new JsonObject();
          targetReleaseObject.addProperty("name", targetRelease);
          fieldsObject.add(TARGET_RELEASE_FIELD, targetReleaseObject);
+         JsonArray fixVersions = new JsonArray();
+         JsonObject fixedVersionObject = new JsonObject();
+         fixedVersionObject.addProperty("name", targetRelease);
+         fixedVersionObject.addProperty("fixVersion", targetRelease);
+         fixVersions.add(fixedVersionObject);
+         fieldsObject.add("fixVersions", fixVersions);
          JsonObject assigneeObject = new JsonObject();
          assigneeObject.addProperty("name", assignee);
          fieldsObject.add("assignee", assigneeObject);

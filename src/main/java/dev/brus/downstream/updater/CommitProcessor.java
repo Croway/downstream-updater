@@ -1125,7 +1125,7 @@ public class CommitProcessor {
 
       Issue downstreamIssue = downstreamIssueManager.createIssue(
          upstreamIssue.getSummary(), upstreamIssue.getDescription(), downstreamIssueManager.getIssueTypeBug(),
-         assignee.getDownstreamUsername(), release, Collections.emptyList());
+         assignee.getDownstreamUsername(), release, List.of("BACKPORT", "DOWNSTREAM_UPDATER"));
 
       downstreamIssueManager.addIssueUpstreamIssues(downstreamIssue.getKey(), upstreamIssue.getKey());
 
